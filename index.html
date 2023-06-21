@@ -7,10 +7,48 @@
 
     <title>Pune Movement</title>
 
-    <script src="index.js" type="module"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        .center {
+            text-align: center;
+            margin: 0 auto;
+            padding: 15px
+        }
+
+        #map {
+            width: 900px;
+            height: 500px
+        }
+
+        #movement {
+            white-space: pre-line
+        }
+
+        .table-cont {
+            padding: 15px;
+            display: block;
+        }
+
+        table {
+            border-collapse: collapse;
+            overflow-y: scroll;
+            height: auto;
+            display: block;
+            font: 12px monospace
+        }
+
+        table tr td,
+        table tr th {
+            border: 1px solid gray;
+        }
+    </style>
 </head>
 
-<body style="text-align: center">
+<body class="center">
     <form id="form">
         <label for="from">From Distrct:</label>
         <select name="from" id="from"></select>
@@ -24,15 +62,22 @@
         <label for="to">To Distrct:</label>
         <select name="to" id="to"></select>
 
-        <br />
-        <br />
-
         <input type="submit" value="Submit">
     </form>
 
+
     <br />
 
+    <div class="center" id="map"></div>
+    <script src="index.js" type="module"></script>
+
+    <br /> <br />
+
     <span id="movement"></span>
+
+    <div class="table-cont">
+        <table id="table"></table>
+    </div>
 </body>
 
 </html>

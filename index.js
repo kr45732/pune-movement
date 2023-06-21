@@ -1,47 +1,102 @@
-import * as wardsDataDef from "./wards_data.json" assert { type: "json" }
+import * as geojsonDef from "./data.geojson" assert { type: "json" };
+import { parse } from 'https://unpkg.com/@vanillaes/csv@3.0.1/index.js';
 
-let wardsData = wardsDataDef.default;
+let csv;
+let rowNames;
+fetch("out.csv")
+    .then(data => data.text())
+    .then(data => {
+        csv = parse(data);
+        rowNames = csv.splice(0, 1)[0];
+    });
+
+let geojson = geojsonDef.default;
 
 let fromSelect = document.getElementById("from");
-for (let ward in wardsData) {
-    var opt = document.createElement("option");
-    opt.value = ward;
-    opt.innerHTML = ward;
+for (let ward of geojson.features) {
+    let opt = document.createElement("option");
+    opt.value = ward.properties.name;
+    opt.innerHTML = ward.properties.name;
     fromSelect.appendChild(opt);
 }
 
 let toSelect = document.getElementById("to");
-for (let ward in wardsData) {
-    var opt = document.createElement("option");
-    opt.value = ward;
-    opt.innerHTML = ward;
+for (let ward of geojson.features.reverse()) {
+    let opt = document.createElement("option");
+    opt.value = ward.properties.name;
+    opt.innerHTML = ward.properties.name;
     toSelect.appendChild(opt);
 }
+
+let map = L.map('map').setView([18.5204, 73.8567], 11);
+let layerGroup = L.layerGroup().addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
 document.getElementById("form").addEventListener('submit', (event) => {
     event.preventDefault();
 
-    let from = event.target.elements.from.value;
+    let fromName = event.target.elements.from.value;
     let activity = event.target.elements.activity.value;
-    let to = event.target.elements.to.value;
+    let toName = event.target.elements.to.value;
 
-    let movementCount = getMovement(from, activity, to);
-    document.getElementById("movement").textContent = `Movement Count: ${movementCount}`;
+    let fromGeojson = JSON.parse(JSON.stringify(geojson))
+    fromGeojson = fromGeojson.features.filter(w => w.properties.name == fromName);
+
+    let toGeojson = JSON.parse(JSON.stringify(geojson))
+    toGeojson.features = toGeojson.features.filter(w => w.properties.name == toName);
+
+    layerGroup.clearLayers();
+    L.geoJson(fromGeojson, { onEachFeature: onEachFeature }).addTo(layerGroup);
+    L.geoJson(toGeojson, { style: { color: "#00FF00" }, onEachFeature: onEachFeature }).addTo(layerGroup);
+
+
+    function onEachFeature(feature, layer) {
+        layer.bindPopup(`<p>${feature.properties.name}</p>`);
+    }
+
+    let movement = getMovement(fromName, activity, toName);
+
+    let table = document.getElementById("table");
+    table.innerHTML = "";
+
+    let tr = table.insertRow();
+    for (let col of rowNames) {
+        let th = document.createElement("th");
+        th.innerHTML = col;
+        tr.appendChild(th);
+
+    }
+
+    for (let row of movement) {
+        let tr = table.insertRow();
+        for (let col of row) {
+            let td = tr.insertCell();
+            td.innerHTML = col;
+        }
+    }
+
+    document.getElementById("movement").textContent = `Movement Count: ${movement.length}`;
 });
 
+function getCol(row, colName) {
+    return row[rowNames.indexOf(colName)];
+}
 
 function getMovement(from, activity, to) {
-    if (!wardsData[from]) {
-        return `Invalid from ward: ${from}`;
+    let out = []
+    for (let person of csv) {
+        if (getCol(person, "AdminUnitName") == from) {
+            if (activity == "workplaces") {
+                if (getCol(person, "WorkPlaceWard") == to) {
+                    out.push(person);
+                }
+            } else {
+                if (getCol(person, "SchoolWard") == to) {
+                    out.push(person);
+                }
+            }
+        }
     }
 
-    if (activity != "schools" && activity != "workplaces") {
-        return `Invalid activity: ${activity}`;
-    }
-
-    if (!wardsData[to]) {
-        return `Invalid to ward: ${to}`;
-    }
-
-    return wardsData[from][activity].filter(ward => ward != undefined && ward == to).length;
+    return out;
 }
