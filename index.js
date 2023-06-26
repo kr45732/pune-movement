@@ -49,34 +49,36 @@ document.getElementById("form").addEventListener('submit', (event) => {
     L.geoJson(fromGeojson, { onEachFeature: onEachFeature }).addTo(layerGroup);
     L.geoJson(toGeojson, { style: { color: "#00FF00" }, onEachFeature: onEachFeature }).addTo(layerGroup);
 
-
-    function onEachFeature(feature, layer) {
-        layer.bindPopup(`<p>${feature.properties.name}</p>`);
-    }
-
     let movement = getMovement(fromName, activity, toName);
+    renderTable("movement", movement, `Movement Count: ${movement.length}`);
 
-    let table = document.getElementById("table");
+    renderTable("workplaces", getWardInfo(fromName, "workplaces"), `Workplaces in ${fromName}`);
+    renderTable("schools", getWardInfo(fromName, "schools"), `Schools in ${fromName}`);
+});
+
+function renderTable(tableId, data, captionText) {
+    let table = document.getElementById(tableId);
     table.innerHTML = "";
+
+    let caption = document.createElement("caption");
+    caption.textContent = captionText;
+    table.appendChild(caption);
 
     let tr = table.insertRow();
     for (let col of rowNames) {
         let th = document.createElement("th");
         th.innerHTML = col;
         tr.appendChild(th);
-
     }
 
-    for (let row of movement) {
+    for (let row of data) {
         let tr = table.insertRow();
         for (let col of row) {
             let td = tr.insertCell();
             td.innerHTML = col;
         }
     }
-
-    document.getElementById("movement").textContent = `Movement Count: ${movement.length}`;
-});
+}
 
 function getCol(row, colName) {
     return row[rowNames.indexOf(colName)];
@@ -99,4 +101,25 @@ function getMovement(from, activity, to) {
     }
 
     return out;
+}
+
+function getWardInfo(ward, activity) {
+    let out = []
+    for (let person of csv) {
+        if (activity == "workplaces") {
+            if (getCol(person, "WorkPlaceWard") == ward) {
+                out.push(person);
+            }
+        } else {
+            if (getCol(person, "SchoolWard") == ward) {
+                out.push(person);
+            }
+        }
+    }
+
+    return out;
+}
+
+function onEachFeature(feature, layer) {
+    layer.bindPopup(`<p>${feature.properties.name}</p>`);
 }

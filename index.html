@@ -21,29 +21,27 @@
 
         #map {
             width: 900px;
-            height: 500px
-        }
-
-        #movement {
-            white-space: pre-line
-        }
-
-        .table-cont {
-            padding: 15px;
-            display: block;
+            height: 500px;
         }
 
         table {
             border-collapse: collapse;
-            overflow-y: scroll;
+            overflow-x: scroll;
             height: auto;
             display: block;
-            font: 12px monospace
+            padding-top: 15px;
         }
 
         table tr td,
         table tr th {
             border: 1px solid gray;
+            padding: 0px 8px;
+        }
+
+        table caption {
+            text-align: left;
+            font-weight: bold;
+            font-size: 20px;
         }
     </style>
 </head>
@@ -65,19 +63,14 @@
         <input type="submit" value="Submit">
     </form>
 
-
-    <br />
+    <br>
 
     <div class="center" id="map"></div>
     <script src="index.js" type="module"></script>
 
-    <br /> <br />
-
-    <span id="movement"></span>
-
-    <div class="table-cont">
-        <table id="table"></table>
-    </div>
+    <table id="movement"></table>
+    <table id="workplaces"></table>
+    <table id="schools"></table>
 </body>
 
 </html>
