@@ -54,6 +54,7 @@ document.getElementById("form").addEventListener('submit', (event) => {
 
     renderTable("workplaces", getWardInfo(fromName, "workplaces"), `Workplaces in ${fromName}`);
     renderTable("schools", getWardInfo(fromName, "schools"), `Schools in ${fromName}`);
+    renderTable("households", getWardInfo(fromName, "households"), `Households in ${fromName}`);
 });
 
 function renderTable(tableId, data, captionText) {
@@ -110,8 +111,12 @@ function getWardInfo(ward, activity) {
             if (getCol(person, "WorkPlaceWard") == ward) {
                 out.push(person);
             }
-        } else {
+        } else if (activity == "schools") {
             if (getCol(person, "SchoolWard") == ward) {
+                out.push(person);
+            }
+        } else {
+            if (getCol(person, "HouseholdWard") == ward) {
                 out.push(person);
             }
         }
