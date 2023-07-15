@@ -52,9 +52,9 @@ document.getElementById("form").addEventListener('submit', (event) => {
     let movement = getMovement(fromName, activity, toName);
     renderTable("movement", movement, `Movement Count: ${movement.length}`);
 
-    renderTable("workplaces", getWardInfo(fromName, "workplaces"), `Workplaces in ${fromName}`);
-    renderTable("schools", getWardInfo(fromName, "schools"), `Schools in ${fromName}`);
-    renderTable("households", getWardInfo(fromName, "households"), `Households in ${fromName}`);
+    renderGraph("workplaces", getWardInfo(fromName, "workplaces"));
+    renderGraph("schools", getWardInfo(fromName, "schools"));
+    renderGraph("households", getWardInfo(fromName, "households"));
 });
 
 function renderTable(tableId, data, captionText) {
@@ -81,6 +81,37 @@ function renderTable(tableId, data, captionText) {
     }
 }
 
+function renderGraph(tableId, wardInfo) {
+    new Chart(document.getElementById(tableId), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(wardInfo),
+            datasets: [{
+                data: Object.values(wardInfo),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: tableId
+                }
+            }
+        }
+    });
+}
+
 function getCol(row, colName) {
     return row[rowNames.indexOf(colName)];
 }
@@ -105,19 +136,22 @@ function getMovement(from, activity, to) {
 }
 
 function getWardInfo(ward, activity) {
-    let out = []
+    let out = {}
     for (let person of csv) {
         if (activity == "workplaces") {
             if (getCol(person, "WorkPlaceWard") == ward) {
-                out.push(person);
+                let workplaceId = getCol(person, "WorkPlaceID");
+                out[workplaceId] = (out[workplaceId] | 0) + 1;
             }
         } else if (activity == "schools") {
             if (getCol(person, "SchoolWard") == ward) {
-                out.push(person);
+                let workplaceId = getCol(person, "school_id");
+                out[workplaceId] = (out[workplaceId] | 0) + 1;
             }
         } else {
             if (getCol(person, "HouseholdWard") == ward) {
-                out.push(person);
+                let workplaceId = getCol(person, "HHID");
+                out[workplaceId] = (out[workplaceId] | 0) + 1;
             }
         }
     }
